@@ -78,34 +78,34 @@ class Game {
     game.renderer.renderSession.roundPixels = false;
     Phaser.Canvas.setImageRenderingCrisp(game.canvas);
 
-    this.load.spritesheet("kiki", "kiki2.png", 18, 18, 8);
+    this.load.spritesheet("kiki", "assets/sprites/kiki2.png", 18, 18, 8);
 
-    this.load.spritesheet("bird", "bird.png", 7, 7, 2);
-    this.load.spritesheet("goose", "goose.png", 9, 9, 2);
+    this.load.spritesheet("bird", "assets/sprites/bird.png", 7, 7, 2);
+    this.load.spritesheet("goose", "assets/sprites/goose.png", 9, 9, 2);
 
-    this.load.spritesheet("superbabytree", "fetustree.png", 10, 31, 3)
-    this.load.spritesheet("babytree", "babytree.png", 17, 52, 3);
-    this.load.spritesheet("tree", "tree.png", 25, 75, 3);
-    this.load.spritesheet("fangtree", "fangtree.png", 25, 75, 3);
+    this.load.spritesheet("superbabytree", "assets/sprites/fetustree.png", 10, 31, 3)
+    this.load.spritesheet("babytree", "assets/sprites/babytree.png", 17, 52, 3);
+    this.load.spritesheet("tree", "assets/sprites/tree.png", 25, 75, 3);
+    this.load.spritesheet("fangtree", "assets/sprites/fangtree.png", 25, 75, 3);
 
-    this.load.spritesheet("babystar", "babystar.png", 3, 3, 2);
-    this.load.spritesheet("star", "star.png", 5, 5, 2);
-    this.load.spritesheet("bigstar", "bigstar.png", 7, 7, 4);
+    this.load.spritesheet("babystar", "assets/sprites/babystar.png", 3, 3, 2);
+    this.load.spritesheet("star", "assets/sprites/star.png", 5, 5, 2);
+    this.load.spritesheet("bigstar", "assets/sprites/bigstar.png", 7, 7, 4);
 
-    this.load.spritesheet("cage", "cage.png", 7, 7, 2);
-    this.load.spritesheet("parcel", "parcel.png", 5, 5, 2);
-    this.load.spritesheet("radio", "radio.png", 5, 5, 2);
-    this.load.spritesheet("pretzel", "pretzel.png", 5, 5, 2);
-    this.load.spritesheet("pumpkin", "pumpkin.png", 7, 7, 2);
-    this.load.spritesheet("potpie", "potpie.png", 8, 7, 2);
+    this.load.spritesheet("cage", "assets/sprites/cage.png", 7, 7, 2);
+    this.load.spritesheet("parcel", "assets/sprites/parcel.png", 5, 5, 2);
+    this.load.spritesheet("radio", "assets/sprites/radio.png", 5, 5, 2);
+    this.load.spritesheet("pretzel", "assets/sprites/pretzel.png", 5, 5, 2);
+    this.load.spritesheet("pumpkin", "assets/sprites/pumpkin.png", 7, 7, 2);
+    this.load.spritesheet("potpie", "assets/sprites/potpie.png", 8, 7, 2);
 
-    this.load.spritesheet("clocktower", "clocktower.png", 40, 150, 1);
+    this.load.spritesheet("clocktower", "assets/sprites/clocktower.png", 40, 150, 1);
 
-    this.load.spritesheet("end", "end.png", 32, 32, 2);
+    this.load.spritesheet("end", "assets/sprites/end.png", 32, 32, 2);
 
     // audio
-    this.load.audio('pickup', "pickup.wav");
-    this.load.audio('hit', "hit.wav");
+    this.load.audio('pickup', "assets/audio/pickup.wav");
+    this.load.audio('hit', "assets/audio/hit.wav");
     
     }
 
@@ -299,7 +299,6 @@ class Game {
             if (collected.indexOf(this.pumpkin) >= 0) return;
             pickUp.play();
             collected.push(this.pumpkin);
-            console.log(this.pumpkin)
             this.pumpkin.animations.play('idle');
             this.goosepumpkin.kill();
         }.bind(this));
