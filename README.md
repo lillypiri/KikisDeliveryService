@@ -1,5 +1,5 @@
 # 📻 🥨 🎃 Kiki's Delivery Service inspired game for Ludum Dare #42 
-### 🚧 This is a WIP. It was made at CampJS & still needs some things added in. 🚧
+### 🚧 This is a WIP. It was made at CampJS & still needs some things added in/refactoring. 🚧
 
 Tools used:
 
