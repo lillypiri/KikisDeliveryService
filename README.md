@@ -6,6 +6,8 @@ Tools used:
 - ⚙️  Phaser CE (game engine)
 - 🎨  AseSprite (to make the pixel art)
 
+## Play it right now on [itch.io](https://lillypiri.itch.io/kikis-delivery-service-ludum-dare-42)!
+
 ### How to run it locally
 - Git clone this repo
 - In project directory `python -m SimpleHTTPServer 8000`
