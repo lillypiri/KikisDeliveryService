@@ -96,8 +96,12 @@ class Game {
     this.load.spritesheet("parcel", "parcel.png", 5, 5, 2);
     this.load.spritesheet("radio", "radio.png", 5, 5, 2);
     this.load.spritesheet("pretzel", "pretzel.png", 5, 5, 2);
+    this.load.spritesheet("pumpkin", "pumpkin.png", 7, 7, 2);
+    this.load.spritesheet("potpie", "potpie.png", 8, 7, 2);
 
     this.load.spritesheet("clocktower", "clocktower.png", 40, 150, 1);
+
+    this.load.spritesheet("end", "end.png", 32, 32, 2);
 
     // audio
     this.load.audio('pickup', "pickup.wav");
@@ -181,9 +185,11 @@ class Game {
         goose = this.add.sprite(500, 70, "goose");
         goosetwo = this.add.sprite(500, 80, "goose");
         goosethree = this.add.sprite(500, 30, "goose");
+        this.goosefour = this.add.sprite(500, 50, "goose");
+        this.goosefive = this.add.sprite(500, 60, "goose");
 
 
-        geeseflock = [goose, goosetwo, goosethree];
+        geeseflock = [goose, goosetwo, goosethree, this.goosefour, this.goosefive];
         geeseflock.forEach((item) => {
             item.animations.add('flap', [0, 1], 4, true);
             item.animations.play('flap');
@@ -196,16 +202,21 @@ class Game {
         collectedGroup.physicsBodyType = Phaser.Physics.ARCADE;
 
         cage = collectedGroup.getFirstDead(true, 500, 105, "cage");
-        cage.animations.add('idle', [0,1], 2, true);
-        
         parcel = collectedGroup.getFirstDead(true, 500, 110, "parcel");
-        parcel.animations.add('idle', [0,1], 2, true);
-
         pretzel = collectedGroup.getFirstDead(true, 500, 105, "pretzel");
-        pretzel.animations.add('idle', [0,1], 2, true);
+        this.pumpkin = collectedGroup.getFirstDead(true, 500, 105, "pumpkin");
+        this.potpie = collectedGroup.getFirstDead(true, 500, 105, "potpie");
 
+        this.collectables = [cage, parcel, pretzel, this.pumpkin, this.potpie];
+        this.collectables.forEach((item) => {
+            item.animations.add('idle', [0,1], 2, true);
+        });
 
         clocktower = this.add.sprite(495, 40, "clocktower");
+
+        this.end = this.add.sprite(590, 70, "end");
+        this.end.animations.add('sparkle', [0,1], 2, true);
+        
 
         // Kiki sprite 
         kiki = this.add.sprite(20, 90, "kiki");
@@ -226,8 +237,10 @@ class Game {
         goosecage = this.add.sprite(500, 76, "cage");
         gooseparcel = this.add.sprite(500, 84, "parcel");
         goosepretzel = this.add.sprite(500, 34, "pretzel");
+        this.goosepumpkin = this.add.sprite(500, 54, "pumpkin");
+        this.goosepotpie = this.add.sprite(500, 68, "potpie");
 
-        gooseitems = [goosecage, gooseparcel, goosepretzel];
+        gooseitems = [goosecage, gooseparcel, goosepretzel, this.goosepumpkin, this.goosepotpie];
         gooseitems.forEach((item) => {
             item.animations.add('idle', [0,1], 2, true);
             item.animations.play('idle');
@@ -282,23 +295,51 @@ class Game {
             goosepretzel.kill();
         });
 
+        game.physics.arcade.collide(kiki, this.goosefour, function (kiki, goosefour) {
+            if (collected.indexOf(this.pumpkin) >= 0) return;
+            pickUp.play();
+            collected.push(this.pumpkin);
+            console.log(this.pumpkin)
+            this.pumpkin.animations.play('idle');
+            this.goosepumpkin.kill();
+        }.bind(this));
+
+        game.physics.arcade.collide(kiki, this.goosefive, function (kiki, goosefive) {
+            if (collected.indexOf(this.potpie) >= 0) return;
+            pickUp.play();
+            collected.push(this.potpie);
+            this.potpie.animations.play('idle');
+            this.goosepotpie.kill();
+        }.bind(this));
+
         if (isPlaying) {
             let flock = [bird, birdtwo, birdthree];
             flock.map(x => { x.x -=1 })
 
-            if (kiki.x > 120){
+            // fix this
+            if (kiki.x > 90){
                 goose.x -=1;
                 goosecage.x = (goose.x + 2);
             } 
             
-            if (kiki.x > 200) {
+            if (kiki.x > 140) {
                 goosetwo.x -=1;
                 gooseparcel.x = (goosetwo.x +2);
             }
 
-            if (kiki.x > 250) {
+            if (kiki.x > 220) {
                 goosethree.x -=1;
                 goosepretzel.x = (goosethree.x + 2);
+            }
+
+            if (kiki.x > 270) {
+                this.goosefour.x -=1;
+                this.goosepumpkin.x = (this.goosefour.x + 2);
+            }
+
+            if (kiki.x > 320) {
+                this.goosefive.x -=1;
+                this.goosepotpie.x = (this.goosefive.x + 2);
             }
 
             // drop off the items
@@ -306,6 +347,7 @@ class Game {
                 collected.map( x => {
                     x.kill();
                 })
+                this.end.play('sparkle');
             }
 
             if (goose.x === 0) {
