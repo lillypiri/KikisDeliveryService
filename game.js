@@ -2,21 +2,29 @@ let SCALE_FACTOR = 4;
 
 let game = new Phaser.Game(250, 150, Phaser.CANVAS, 'game');
 
-//TODO 
-// end sprite/area 
-// game over / restart
+// TODO 
+// score / timer?
+// make it longer
 
-// nice to have
-// fx
-// score
-
+// Kiki variables
 let kiki;
 let isPlaying = true;
 let isFacing = 'right';
 
+// Stars
 let babystar;
+let babystartwo;
+let babystarthree;
+let babystarfour;
 let star;
+let startwo;
 let bigstar;
+let bigstartwo;
+let bigstarthree;
+
+// Groups
+let obstacleGroup;
+let collectedGroup;
 
 // Trees
 let superbabytree;
@@ -28,28 +36,38 @@ let treetwo;
 let treethree;
 let treefour;
 
+// Crows
 let bird;
 let birdtwo;
 let birdthree;
-
 let flock;
 
+// Geese
 let goose;
 let goosetwo;
+let goosethree;
+let geeseflock;
 
-// carry items
+// Kiki carry items
 let cage;
 let parcel;
 let radio;
+let pretzel;
 
-// goose items
+// Geese carry items
+let gooseitems;
 let goosecage;
 let gooseparcel;
+let goosepretzel;
 
+let clocktower; 
+
+// Collected items
+let collected = [];
+
+// Sounds
 let pickUp;
 let hit;
-
-let collected = [];
 
 class Game {
 
@@ -77,6 +95,9 @@ class Game {
     this.load.spritesheet("cage", "cage.png", 7, 7, 2);
     this.load.spritesheet("parcel", "parcel.png", 5, 5, 2);
     this.load.spritesheet("radio", "radio.png", 5, 5, 2);
+    this.load.spritesheet("pretzel", "pretzel.png", 5, 5, 2);
+
+    this.load.spritesheet("clocktower", "clocktower.png", 40, 150, 1);
 
     // audio
     this.load.audio('pickup', "pickup.wav");
@@ -86,72 +107,67 @@ class Game {
 
     // Add stuff to your scene
     create() {
-        game.physics.startSystem(Phaser.Physics.ARCADE);
-        
+        // reset this array to be empty - it not being cleared was causing the carry issue
+        collected = [];
 
+        game.physics.startSystem(Phaser.Physics.ARCADE);
         game.stage.backgroundColor = '#5e36fb';
-        game.world.setBounds(0, 0, 500, 170);
+        game.world.setBounds(0, 0, 700, 170);
 
         babystar = this.add.sprite(50, 30, "babystar");
-        babystar.animations.add('twinkle', [0, 1], 2, true);
-        babystar.animations.play('twinkle');
-        
-        star = this.add.sprite(200, 110, "star");
-        star.animations.add('twinkle', [0, 1], 2, true);
-        star.animations.play('twinkle');
+        babystartwo = this.add.sprite(250, 45, "babystar");
+        babystarthree = this.add.sprite(350, 45, "babystar");
+        babystarfour = this.add.sprite(280, 20, "babystar");
+        star = this.add.sprite(300, 60, "star");
+        startwo = this.add.sprite(400, 70, "star");
+
+        this.smallConstellation = [babystar, star, startwo, babystartwo, babystarthree, babystarfour];
+        this.smallConstellation.forEach((item) => {
+            item.animations.add('twinkle', [0, 1], 2, true);
+            item.animations.play('twinkle');
+        });
+
 
         bigstar = this.add.sprite(150, 50, "bigstar");
-        bigstar.animations.add('twinkle', [0, 1, 2, 3], 4, true);
-        bigstar.animations.play('twinkle');
+        bigstartwo = this.add.sprite(450, 60, "bigstar");
+        bigstarthree = this.add.sprite(200, 80, "bigstar");
 
+        this.bigConstellation = [bigstar, bigstartwo, bigstarthree];
+        this.bigConstellation.forEach((item) => {
+            item.animations.add('twinkle', [0, 1, 2, 3], 4, true);
+            item.animations.play('twinkle');
+        });
 
         superbabytree = this.add.sprite(120, 140, "superbabytree");
-        superbabytree.animations.add('cute', [0, 1, 2], 3, true);
-        superbabytree.animations.play('cute');
-        game.physics.arcade.enable(superbabytree);
-
         babytree = this.add.sprite(100, 120, "babytree");
-        babytree.animations.add('cute', [0, 1, 2], 3, true);
-        babytree.animations.play('cute');
-        game.physics.arcade.enable(babytree);
-
         babytreetwo = this.add.sprite(170, 125, "babytree");
-        babytreetwo.animations.add('cute', [0, 1, 2], 3, true);
-        babytreetwo.animations.play('cute');
-        game.physics.arcade.enable(babytreetwo);
-
         babytreethree = this.add.sprite(320, 125, "babytree");
-        babytreethree.animations.add('cute', [0, 1, 2], 3, true);
-        babytreethree.animations.play('cute');
-        game.physics.arcade.enable(babytreethree);
 
-        tree = this.add.sprite(40, 100, "tree");
-        tree.animations.add('angery', [0, 1, 2], 5, true);
-        tree.animations.play('angery');
-        game.physics.arcade.enable(tree);
-        tree.body.setSize(5, 70, 10,4);
+        this.smallTrees = [superbabytree, babytree, babytreetwo, babytreethree];
+        this.smallTrees.forEach((item) => {
+            item.animations.add('cute', [0, 1, 2], 3, true);
+            item.animations.play('cute');
+        });
 
-        treetwo = this.add.sprite(280, 110, "fangtree");
-        treetwo.animations.add('angery', [0, 1, 2], 5, true);
-        treetwo.animations.play('angery');
-        game.physics.arcade.enable(treetwo);
-        treetwo.body.setSize(5, 70, 10,4);
+        obstacleGroup = this.add.group();
+        obstacleGroup.enableBody = true;
+        obstacleGroup.physicsBodyType = Phaser.Physics.ARCADE;
 
-        treethree = this.add.sprite(200, 95, "fangtree");
-        treethree.animations.add('angery', [0, 1, 2], 5, true);
-        treethree.animations.play('angery');
-        game.physics.arcade.enable(treethree);
-        treethree.body.setSize(5, 70, 10,4);
+        tree = obstacleGroup.getFirstDead(true, 40, 100, "tree");
+        treetwo = obstacleGroup.getFirstDead(true, 280, 110, "fangtree");
+        treethree = obstacleGroup.getFirstDead(true, 200, 95, "fangtree");
+        treefour = obstacleGroup.getFirstDead(true, 350, 95, "tree");
 
-        treefour = this.add.sprite(350, 95, "tree");
-        treefour.animations.add('angery', [0, 1, 2], 5, true);
-        treefour.animations.play('angery');
-        game.physics.arcade.enable(treefour);
-        treefour.body.setSize(5, 70, 10,4);
+        this.bigTrees = [tree, treetwo, treethree, treefour];
+        this.bigTrees.forEach((item) => {
+            item.animations.add('angery', [0, 1, 2], 5, true);
+            item.animations.play('angery');
+            item.body.setSize(5, 70, 10,4);
+        });
 
-        bird = this.add.sprite(500, 70, "bird");
-        birdtwo = this.add.sprite(300, 30, "bird");
-        birdthree = this.add.sprite(400, 100, "bird");
+        bird = obstacleGroup.getFirstDead(true, 500, 70, "bird");
+        birdtwo = obstacleGroup.getFirstDead(true, 300, 30, "bird");
+        birdthree = obstacleGroup.getFirstDead(true, 400, 100, "bird");
 
         let flock = [bird, birdtwo, birdthree];
 
@@ -163,15 +179,33 @@ class Game {
 
 
         goose = this.add.sprite(500, 70, "goose");
-        goose.animations.add('flap', [0, 1], 4, true);
-        goose.animations.play('flap');
-        game.physics.arcade.enable(goose);
-
         goosetwo = this.add.sprite(500, 80, "goose");
-        goosetwo.animations.add('flap', [0, 1], 4, true);
-        goosetwo.animations.play('flap');
-        game.physics.arcade.enable(goosetwo);
+        goosethree = this.add.sprite(500, 30, "goose");
 
+
+        geeseflock = [goose, goosetwo, goosethree];
+        geeseflock.forEach((item) => {
+            item.animations.add('flap', [0, 1], 4, true);
+            item.animations.play('flap');
+            game.physics.arcade.enable(item);
+        })
+
+        // carry items
+        collectedGroup = game.add.group();
+        collectedGroup.enableBody = true;
+        collectedGroup.physicsBodyType = Phaser.Physics.ARCADE;
+
+        cage = collectedGroup.getFirstDead(true, 500, 105, "cage");
+        cage.animations.add('idle', [0,1], 2, true);
+        
+        parcel = collectedGroup.getFirstDead(true, 500, 110, "parcel");
+        parcel.animations.add('idle', [0,1], 2, true);
+
+        pretzel = collectedGroup.getFirstDead(true, 500, 105, "pretzel");
+        pretzel.animations.add('idle', [0,1], 2, true);
+
+
+        clocktower = this.add.sprite(495, 40, "clocktower");
 
         // Kiki sprite 
         kiki = this.add.sprite(20, 90, "kiki");
@@ -182,12 +216,6 @@ class Game {
         kiki.animations.play('idleright');
         game.physics.arcade.enable(kiki);
 
-        // carry items
-        cage = this.add.sprite(500, 105, "cage");
-        cage.animations.add('idle', [0,1], 2, true);
-        
-        parcel = this.add.sprite(500, 110, "parcel");
-        parcel.animations.add('idle', [0,1], 2, true);
 
         radio = this.add.sprite(32, 97, "radio");
         radio.animations.add('idle', [0,1], 2, true);
@@ -196,12 +224,15 @@ class Game {
         // goose items
 
         goosecage = this.add.sprite(500, 76, "cage");
-        goosecage.animations.add('idle', [0,1], 2, true);
-        goosecage.animations.play('idle');
-
         gooseparcel = this.add.sprite(500, 84, "parcel");
-        gooseparcel.animations.add('idle', [0,1], 2, true);
-        gooseparcel.animations.play('idle');
+        goosepretzel = this.add.sprite(500, 34, "pretzel");
+
+        gooseitems = [goosecage, gooseparcel, goosepretzel];
+        gooseitems.forEach((item) => {
+            item.animations.add('idle', [0,1], 2, true);
+            item.animations.play('idle');
+            game.physics.arcade.enable(item);
+        });
 
         game.camera.follow(kiki);
 
@@ -217,36 +248,38 @@ class Game {
 
     // Called once per frame to move stuff around 
     update() {
-        let obstacles = [tree, treetwo, treethree, treefour, bird, birdtwo, birdthree];
+        game.physics.arcade.collide(kiki, obstacleGroup, function(kiki, obstacle) {
+            hit.play();
+            game.state.start('game');
+        });
 
-        obstacles.forEach((item) => {
-            game.physics.arcade.collide(kiki, item, function (kiki, item) {
-                hit.play();
-                game.state.start('game');
-            });
+        game.physics.arcade.collide(collectedGroup, obstacleGroup, function(collectedItem, obstacle) {
+            hit.play();
+            game.state.start('game');
         });
 
         game.physics.arcade.collide(kiki, goose, function (kiki, goose) {
             if (collected.indexOf(cage) >= 0) return;
-
-            console.log("goose collision")
             pickUp.play();
-            // cageCollected = true; 
-            collected.push(cage);
             cage.animations.play('idle');
+            collected.push(cage);
             goosecage.kill();
         });
     
         game.physics.arcade.collide(kiki, goosetwo, function (kiki, goosetwo) {
             if (collected.indexOf(parcel) >= 0) return;
-
-            console.log("goosetwo collision")
             pickUp.play();
-            // cageCollected = true; 
             collected.push(parcel);
-            console.log("about to play parcel animation");
             parcel.animations.play('idle');
             gooseparcel.kill();
+        });
+
+        game.physics.arcade.collide(kiki, goosethree, function (kiki, goosethree) {
+            if (collected.indexOf(pretzel) >= 0) return;
+            pickUp.play();
+            collected.push(pretzel);
+            pretzel.animations.play('idle');
+            goosepretzel.kill();
         });
 
         if (isPlaying) {
@@ -261,6 +294,18 @@ class Game {
             if (kiki.x > 200) {
                 goosetwo.x -=1;
                 gooseparcel.x = (goosetwo.x +2);
+            }
+
+            if (kiki.x > 250) {
+                goosethree.x -=1;
+                goosepretzel.x = (goosethree.x + 2);
+            }
+
+            // drop off the items
+            if (kiki.x > 500) {
+                collected.map( x => {
+                    x.kill();
+                })
             }
 
             if (goose.x === 0) {
@@ -302,6 +347,7 @@ class Game {
         }
 
         let nextY = kiki.y + kiki.height;
+
         collected.forEach((item) => {
             item.x = kiki.x +4; 
             item.y = nextY;
@@ -311,10 +357,6 @@ class Game {
 
     render() {
         // game.debug.body(tree);
-        // game.debug.body(treetwo);
-        // game.debug.body(treethree);
-        // game.debug.body(treefour);
-        // game.debug.body(bird);
     }
 }
 
